@@ -1,8 +1,6 @@
 import { Router } from 'express';
 const statesRouter = Router();
-
-statesRouter.get("/", (req, res) => {
-    res.send("Hi, I am States");
-});
+import { getAllStates } from '../Controller/states.controller.js';
+statesRouter.get("/", getAllStates);
 
 export default statesRouter;

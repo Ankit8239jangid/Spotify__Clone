@@ -1,6 +1,6 @@
 import { Song } from "../modales/song.modales.js";
 import { User } from "../modales/user.modales.js";
-import { Album } from "../modales/album.modales.js";
+import { Album } from "../modales/albums.modales.js";
 
 export const getAllStates = async (req, res, next) => {
     try {

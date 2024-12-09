@@ -1,26 +1,42 @@
 import { clerkClient } from "@clerk/express";
 
 // Protect Routes middleware to check if the user is logged in
-export const protectRout = async (req, res, next) => {
-    if (!req.body.userId) {
-        res.status(401).json({ massage: "Unauthorized - You must be Logged in" });
-        return
+export const protectRoute  = async (req, res, next) => {
+    const userId = req.body.userId || req.headers["user-id"];
+    if (!userId) {
+        return res.status(401).json({ message: "Unauthorized - You must be Logged in" });
     }
-    next()
-}
-     
+    req.userId = userId; // Attach userId to req for subsequent middleware
+    next();
+};
+
+
 
 // Admin middleware to check if the user is admin
 export const Require_Admin = async (req, res, next) => {
     try {
-        const currentUser = await clerkClient.users.getUser(req.userId,)
-        const isAdmin = process.env.ADMIN_EMAIL === currentUser.emailAddresses[0].emailAddress;
-        if (!isAdmin) {
-            res.status(401).json({ massage: "Unauthorized - You must be Admin" })
-            return
+        const userId = req.body.userId || req.headers["user-id"];
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized - User ID is missing" });
         }
-        next()
+
+        const currentUser = await clerkClient.users.getUser(userId);
+
+        if (!currentUser || !currentUser.emailAddresses || currentUser.emailAddresses.length === 0) {
+            return res.status(403).json({ message: "Unauthorized - User data not found or incomplete" });
+        }
+
+        // Check if user is admin (support multiple admin emails)
+        const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+        const isAdmin = adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
+
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Unauthorized - You must be an Admin" });
+        }
+
+        next();
     } catch (error) {
-        res.status(500).json({ massage: "Internal Server Error" })
+        console.error("Error in Require_Admin middleware:", error); // Log the error for debugging
+        res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};

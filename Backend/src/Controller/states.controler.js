@@ -1,13 +1,13 @@
 import { Song } from "../modales/song.modales.js";
 import { User } from "../modales/user.modales.js";
-import { Album } from "../modales/albums.modales.js";
+import { Albums } from "../modales/albums.modales.js";
 
 export const getAllStates = async (req, res, next) => {
     try {
         const [totalSongs, totalUsers, totalAlbums, uniqueArtists] = await Promise.all([
             Song.countDocuments({}),
             User.countDocuments({}),
-            Album.countDocuments({}),
+            Albums.countDocuments({}),
 
             Song.aggregate([
                 {
